@@ -1,0 +1,12 @@
+# Dependencias (No subir a Git)
+node_modules/
+backend/node_modules/
+
+# Archivos de entorno y credenciales sensibles
+.env
+*.pem
+*.key
+
+# Archivos del sistema y logs
+npm-debug.log*
+.DS_Store
