@@ -3,12 +3,23 @@ services:
     build: ./backend
     ports:
       - "3000:3000"
+    env_file: # 👈 Carga automáticamente TODAS las variables de tu archivo .env
+      - .env
     environment:
       - PORT=3000
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - ROLE_ADMIN_NAME=${ROLE_ADMIN_NAME}
+      - ROLE_BASIC_NAME=${ROLE_BASIC_NAME}
+      - ADMIN_NAME=${ADMIN_NAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - BASIC_NAME=${BASIC_NAME}
+      - BASIC_EMAIL=${BASIC_EMAIL}
+      - BASIC_PASSWORD=${BASIC_PASSWORD}
     depends_on:
       - db
     networks:
@@ -16,6 +27,9 @@ services:
 
   db:
     image: mariadb:10.11
+    restart: always
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
