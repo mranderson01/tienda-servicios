@@ -59,3 +59,8 @@ Para pruebas locales y desarrollo continuo, la solución se compone de contenedo
  │                                         [ Amazon RDS MariaDB ]              │
  │                                         (Subred Privada / KMS)   [Módulo 2] │
  └─────────────────────────────────────────────────────────────────────────────┘
+## 🔒 Características de Seguridad & DevSecOps
+- **Gestión de Secretos:** Variables de entorno sensibles gestionadas mediante `.env` (excluido en `.gitignore` para prevenir fuga de credenciales).
+- **Cifrado de Datos:** Contraseñas encriptadas con `bcryptjs` en backend y datos en reposo en Amazon RDS protegidos mediante AWS KMS[cite: 9].
+- **Seguridad Perimetral:** Reglas de AWS WAF contra OWASP Top 10 (SQL Injection, XSS) y tráfico forzado por HTTPS vía CloudFront/ACM[cite: 10].
+- **Aislamiento de Red:** API REST y Base de Datos desplegadas exclusivamente en subredes privadas (VPC) sin acceso público directo[cite: 8, 9].
