@@ -10,3 +10,9 @@ backend/node_modules/
 # Archivos del sistema y logs
 npm-debug.log*
 .DS_Store
+
+
+*.tfvars
+*.tfstate
+*.tfstate.backup
+.terraform/
