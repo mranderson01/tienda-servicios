@@ -16,3 +16,4 @@ npm-debug.log*
 *.tfstate
 *.tfstate.backup
 .terraform/
+.variables.tf
