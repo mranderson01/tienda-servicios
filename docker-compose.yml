@@ -3,11 +3,11 @@ services:
     build: ./backend
     container_name: tienda-servicios-backend-1
     ports:
-      - "3000:3000"
-    env_file: # 👈 Carga automáticamente TODAS las variables de tu archivo .env
+      - "${APP_PORT_BACK}"
+    env_file: 
       - .env
     environment:
-      - PORT=3000
+      - PORT=${PORT}
       - DB_HOST=db
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -29,11 +29,11 @@ services:
     depends_on:
       - db
     networks:
-      - pentest-network
+      - ${NETWORK_NAME}
 
   db:
-    image: mariadb:10.11
-    restart: always
+    image: ${IMGE_NAME}
+    restart: ${RESTART_POLICY}
     env_file:
       - .env
     environment:
@@ -42,15 +42,15 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${PORTS}"
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - ${VOLUME_NAME}
     networks:
-      - pentest-network
+      - ${NETWORK_NAME}
 
 networks:
-  pentest-network:
-    driver: bridge
+  ${NETWORK_NAME}:
+    driver: ${DRIVER_NAME}
 
 volumes:
-  mariadb_data:
+  ${DB_VOLUME_NAME}: 
