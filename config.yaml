@@ -4,5 +4,14 @@ model_list:
       model: openai/qwen2.5-coder
       api_base: http://127.0.0.1:9931/v1
 
+  # Mapeo para interceptar la petición de Claude Code y enviarla a tu Qwen local
+  - model_name: claude-opus-5-5
+    litellm_params:
+      model: openai/qwen2.5-coder
+      api_base: http://127.0.0.1:9931/v1
+
 general_settings:
-  master_key: sk-local-dev-segura
+  master_key: local-dev-key-segura
+  disable_database: true
+  use_max_budget: false
+  store_model_in_db: false
