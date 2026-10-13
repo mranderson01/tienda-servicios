@@ -20,6 +20,11 @@ services:
       - BASIC_NAME=${BASIC_NAME}
       - BASIC_EMAIL=${BASIC_EMAIL}
       - BASIC_PASSWORD=${BASIC_PASSWORD}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_SECRET_ID=${AWS_SECRET_ID}
     depends_on:
       - ${DB_HOST}
     networks:
@@ -47,4 +52,4 @@ networks:
     driver: ${DRIVER}
 
 volumes:
-  mariadb_data:
+  ${NAME_VOLUMEN}: 

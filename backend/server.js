@@ -434,3 +434,28 @@ app.get("/api/v1/services", (req, res) => {
     ],
   });
 });
+
+const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
+
+// Se lee todo dinámicamente de process.env
+const client = new SecretsManagerClient({
+  region: process.env.AWS_REGION,
+  endpoint: process.env.AWS_ENDPOINT_URL,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+async function getDBCredentials() {
+  try {
+    const command = new GetSecretValueCommand({ 
+      SecretId: process.env.AWS_SECRET_ID 
+    });
+    const response = await client.send(command);
+    return JSON.parse(response.SecretString);
+  } catch (error) {
+    console.error("Error al obtener credenciales de Secrets Manager:", error);
+    throw error;
+  }
+}
