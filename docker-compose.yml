@@ -1,13 +1,13 @@
 services:
   backend:
-    build: ./backend
+    build: ${BUILD}
     ports:
-      - "3000:3000"
+      - ${PORTS}
     env_file: # 👈 Carga automáticamente TODAS las variables de tu archivo .env
-      - .env
+      - ${NAME_ENVIROMENT}
     environment:
-      - PORT=3000
-      - DB_HOST=db
+      - PORT=${PORT}
+      - DB_HOST=${DB_HOST}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
@@ -21,30 +21,30 @@ services:
       - BASIC_EMAIL=${BASIC_EMAIL}
       - BASIC_PASSWORD=${BASIC_PASSWORD}
     depends_on:
-      - db
+      - ${DB_HOST}
     networks:
-      - pentest-network
+      - ${NETWORKS}
 
   db:
-    image: mariadb:10.11
-    restart: always
+    image: ${IMAGE}
+    restart: ${RESTART}
     env_file:
-      - .env
+      - ${NAME_ENVIROMENT}
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - ${PORTS}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - ${VOLUMES}
     networks:
-      - pentest-network
+      - ${NETWORKS}
 
 networks:
-  pentest-network:
-    driver: bridge
+  ${NETWORKS}:
+    driver: ${DRIVER}
 
 volumes:
   mariadb_data:
