@@ -3,10 +3,27 @@ const mysql = require("mysql2/promise");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Configuración común para LocalStack / AWS
+const awsConfig = {
+  region: process.env.AWS_REGION || "us-east-1",
+  endpoint: process.env.AWS_ENDPOINT || process.env.AWS_ENDPOINT_URL || "http://localhost:4566",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "mock_access_key",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "mock_secret_key",
+  },
+  forcePathStyle: true, // ¡Obligatorio para que S3 funcione en LocalStack!
+};
+
+// Instancias listas para usar en tu backend
+const s3Client = new S3Client(awsConfig);
+const secretsClient = new SecretsManagerClient(awsConfig);
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -305,6 +322,19 @@ async function initDB(retries = 10, delay = 3000) {
   console.error("❌ No se pudo conectar a MariaDB tras múltiples reintentos.");
 }
 
+async function getDBCredentials() {
+  try {
+    const command = new GetSecretValueCommand({ 
+      SecretId: process.env.AWS_SECRET_ID || "app-production-credentials-seguro" 
+    });
+    const response = await secretsClient.send(command);
+    return JSON.parse(response.SecretString);
+  } catch (error) {
+    console.error("Error al obtener credenciales de Secrets Manager:", error);
+    throw error;
+  }
+}
+
 // Middleware de Autenticación JWT que extrae Roles desde la Tabla Intermedia
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
@@ -366,9 +396,6 @@ app.post("/api/v1/register", async (req, res) => {
   }
 });
 
-// Clave secreta para firmar tokens (en AWS se lee desde Secrets Manager)
-const JWT_SECRET = process.env.JWT_SECRET;
-
 // Login con Consulta JOIN para obtener Roles
 app.post("/api/v1/login", async (req, res) => {
   const { email, password } = req.body;
@@ -407,6 +434,37 @@ app.post("/api/v1/login", async (req, res) => {
   }
 });
 
+// Endpoint para subir archivos de auditoría al S3 de LocalStack
+app.post("/api/v1/upload-report", async (req, res) => {
+  try {
+    const { fileName, fileContent } = req.body;
+    
+    if (!fileName || !fileContent) {
+      return res.status(400).json({ error: "Faltan datos: fileName y fileContent son requeridos." });
+    }
+
+    const uploadParams = {
+      Bucket: "tienda-servicios-assets-seguro", // El nombre del bucket que crea tu Terraform
+      Key: fileName,
+      Body: fileContent,
+      ContentType: "text/plain"
+    };
+
+    const command = new PutObjectCommand(uploadParams);
+    const response = await s3Client.send(command);
+
+    res.json({
+      status: "success",
+      message: "Fichero subido correctamente al S3 de LocalStack",
+      data: response
+    });
+  } catch (error) {
+    console.error("Error al subir archivo a S3:", error);
+    res.status(500).json({ error: "Error interno al subir el archivo a S3" });
+  }
+});
+// Clave secreta para firmar tokens (en AWS se lee desde Secrets Manager)
+const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT;
 app.listen(PORT, async () => {
   console.log(`🚀 API en puerto ${PORT}`);
@@ -435,8 +493,6 @@ app.get("/api/v1/services", (req, res) => {
   });
 });
 
-const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
-
 // Se lee todo dinámicamente de process.env
 const client = new SecretsManagerClient({
   region: process.env.AWS_REGION,
@@ -446,16 +502,3 @@ const client = new SecretsManagerClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
-
-async function getDBCredentials() {
-  try {
-    const command = new GetSecretValueCommand({ 
-      SecretId: process.env.AWS_SECRET_ID 
-    });
-    const response = await client.send(command);
-    return JSON.parse(response.SecretString);
-  } catch (error) {
-    console.error("Error al obtener credenciales de Secrets Manager:", error);
-    throw error;
-  }
-}
