@@ -2,7 +2,7 @@ services:
   backend:
     build: ${BUILD}
     ports:
-      - ${PORTS}
+      - ${PORTS_BACKEND}
     env_file: # 👈 Carga automáticamente TODAS las variables de tu archivo .env
       - ${NAME_ENVIROMENT}
     environment:
@@ -28,7 +28,7 @@ services:
     depends_on:
       - ${DB_HOST}
     networks:
-      - ${NETWORKS}
+      - pentest-network
 
   db:
     image: ${IMAGE}
@@ -41,15 +41,15 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - ${PORTS}
+      - ${PORTS_DB}
     volumes:
       - ${VOLUMES}
     networks:
-      - ${NETWORKS}
+      - pentest-network
 
 networks:
-  ${NETWORKS}:
+  pentest-network:
     driver: ${DRIVER}
 
 volumes:
-  ${NAME_VOLUMEN}: 
+  mariadb_data:

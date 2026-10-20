@@ -115,45 +115,7 @@ async function initDB(retries = 10, delay = 3000) {
                     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
                 )
             `);
-
-      // 3. Comprobar e insertar catálogo inicial de prueba si está vacío
-      const [rows] = await connection.query(
-        "SELECT COUNT(*) AS total FROM services",
-      );
-      if (rows[0].total === 0) {
-        console.log("⏳ Poblando catálogo inicial de servicios...");
-        const initialServices = [
-          [
-            "Auditoría Web & APIs (OWASP)",
-            "Evaluación de vulnerabilidades OWASP Top 10 en aplicaciones web y APIs RESTful.",
-            499.99,
-            "5 días",
-          ],
-          [
-            "Pentesting de Red e Infraestructura",
-            "Análisis de seguridad en redes internas, externas y configuraciones de cortafuegos.",
-            850.0,
-            "7 días",
-          ],
-          [
-            "Auditoría de Seguridad Cloud en AWS",
-            "Revisión de configuraciones en AWS IAM, S3 Buckets, Security Groups y VPC.",
-            1200.0,
-            "10 días",
-          ],
-          [
-            "Hacking Ético & Red Teaming",
-            "Simulación de ciberataques avanzados para medir la capacidad de respuesta de la empresa.",
-            1500.0,
-            "14 días",
-          ],
-        ];
-        await connection.query(
-          "INSERT INTO services (title, description, price, duration) VALUES ?",
-          [initialServices],
-        );
-        console.log("✔ Catálogo inicial cargado correctamente.");
-      }
+            
       // Seeders: Crear Usuario Administrador leyendo desde Variables de Entorno (Sin Hardcode)
       const adminEmail = process.env.ADMIN_EMAIL;
       const adminPass = process.env.ADMIN_PASSWORD;
