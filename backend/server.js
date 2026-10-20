@@ -472,25 +472,18 @@ app.listen(PORT, async () => {
 });
 
 // Endpoint para obtener los servicios de la empresa
-app.get("/api/v1/services", (req, res) => {
-  res.json({
-    status: "success",
-    data: [
-      { id: 1, name: "Auditoría Web OWASP Top 10", price: 450, time: "3 días" },
-      {
-        id: 2,
-        name: "Análisis de Vulnerabilidades en Red",
-        price: 600,
-        time: "5 días",
-      },
-      {
-        id: 3,
-        name: "Pentesting a APIs RESTful & Cloud",
-        price: 800,
-        time: "7 días",
-      },
-    ],
-  });
+// Endpoint para obtener los servicios de la empresa consultando la Base de Datos
+app.get("/api/v1/services", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT id, title AS name, description, price, duration AS time FROM services");
+    res.json({
+      status: "success",
+      data: rows
+    });
+  } catch (error) {
+    console.error("Error al obtener los servicios de la base de datos:", error);
+    res.status(500).json({ status: "error", message: "Error al consultar los servicios" });
+  }
 });
 
 // Se lee todo dinámicamente de process.env
