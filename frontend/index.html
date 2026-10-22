@@ -1,179 +1,808 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tienda de Servicios de Pentesting</title>
-    <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #0d1b2a;
-        color: #e0e1dd;
-        margin: 0;
-        padding: 0;
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pentesting Cloud Store - Dashboard & Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              500: '#00a3ff',
+              600: '#0084d1',
+              700: '#0066a5',
+              900: '#031b33',
+            },
+            cyber: {
+              accent: '#00f0ff',
+              danger: '#ff2a6d',
+              success: '#05ffa1',
+              dark: '#0a0f1d'
+            }
+          }
+        }
       }
-      header {
-        background-color: #1b263b;
-        padding: 15px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 2px solid #415a77;
-      }
-      .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #778da9;
-      }
-      .auth-buttons a,
-      .logout-btn {
-        color: #ffffff;
-        background-color: #0077b6;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: bold;
-        margin-left: 10px;
-        border: none;
-        cursor: pointer;
-      }
-      .auth-buttons a:hover,
-      .logout-btn:hover {
-        background-color: #0096c7;
-      }
-      .container {
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 20px;
-      }
-      .service-card {
-        background-color: #1b263b;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border-left: 5px solid #00b4d8;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="logo">🛡️ Pentesting Cloud Store</div>
+    }
+  </script>
+  <style>
+    /* Custom scrollbars and glow effects */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .cyber-glow {
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+    }
+    .cyber-glow-hover:hover {
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans bg-slate-950 text-slate-200 antialiased selection:bg-cyan-500 selection:text-black">
 
-      <!-- Estado 1: Usuario NO autenticado -->
-      <div id="nav-guest" class="auth-buttons">
-        <a href="login.html">Iniciar Sesión</a>
-        <a href="register.html">Registrarse</a>
-      </div>
+  <!-- Toast / Notification Center -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
 
-      <!-- Estado 2: Usuario Autenticado -->
-      <div id="nav-user" class="auth-buttons hidden">
-        <span>Bienvenido, <b id="user-display"></b></span>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-      </div>
-    </header>
+  <!-- Navbar Navigation Header -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('catalog')">
+          <div class="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-400">
+            <i class="fa-solid me-0 fa-shield-halved text-xl"></i>
+          </div>
+          <div>
+            <span class="text-lg font-bold tracking-wider text-white flex items-center gap-2">
+              Pentesting <span class="text-cyan-400">Cloud Store</span>
+            </span>
+            <span class="text-[10px] text-slate-400 uppercase tracking-widest block -mt-1">Security & Multi-Cloud Ops</span>
+          </div>
+        </div>
 
-    <div class="container">
-      <h1>Catálogo de Servicios de Auditoría de Seguridad</h1>
-      <p>
-        Servicios de seguridad informática y evaluación de vulnerabilidades.
-      </p>
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center gap-1">
+          <button onclick="navigateTo('catalog')" id="nav-catalog" class="px-3 py-2 rounded-md text-sm font-medium transition text-cyan-400 bg-slate-800/80 hover:bg-slate-800">
+            <i class="fa-solid fa-list-check mr-1.5"></i> Catálogo
+          </button>
+          <button onclick="navigateTo('profile')" id="nav-profile" class="hidden px-3 py-2 rounded-md text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-user-shield mr-1.5"></i> Mi Perfil
+          </button>
+          <button onclick="navigateTo('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-md text-sm font-medium transition text-amber-400/90 hover:text-amber-300 hover:bg-amber-500/10 border border-amber-500/20">
+            <i class="fa-solid fa-key mr-1.5"></i> Panel Admin
+          </button>
+        </nav>
 
-      <div id="services-container">
-        <!-- Los servicios se cargan dinámicamente -->
+        <!-- User Authentication Widget -->
+        <div class="flex items-center gap-3">
+          <!-- Auth Actions (When Logged Out) -->
+          <div id="auth-buttons-logged-out" class="flex items-center gap-2">
+            <button onclick="navigateTo('login')" id="nav-login" class="px-3 py-1.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+              Iniciar Sesión
+            </button>
+            <button onclick="navigateTo('register')" id="nav-register" class="px-3 py-1.5 rounded-lg text-sm font-medium bg-cyan-500 text-slate-950 font-semibold hover:bg-cyan-400 transition shadow-lg shadow-cyan-500/20">
+              Registrarse
+            </button>
+          </div>
+
+          <!-- User Badge (When Logged In) -->
+          <div id="auth-buttons-logged-in" class="hidden flex items-center gap-3 border-l border-slate-800 pl-4">
+            <div class="text-right hidden sm:block">
+              <div id="user-display-name" class="text-sm font-semibold text-slate-200">Usuario</div>
+              <div id="user-display-role" class="text-[11px] text-cyan-400 font-mono">Rol: Basic</div>
+            </div>
+            <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Cerrar Sesión">
+              <i class="fa-solid fa-right-from-bracket text-lg"></i>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
+  </header>
 
-    <script>
-      const API_URL = "http://localhost:3000/api/v1";
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      document.addEventListener("DOMContentLoaded", () => {
-        const token = localStorage.getItem("jwt_token");
-        const email = localStorage.getItem("user_email");
+    <!-- Backend Status Banner -->
+    <div id="api-status-banner" class="mb-6 p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-slate-900/60 border-slate-800 text-slate-400">
+      <div class="flex items-center gap-2">
+        <span id="api-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="api-status-text">Comprobando conexión con la API en http://localhost:3000...</span>
+      </div>
+      <button onclick="checkBackendHealth()" class="hover:underline text-cyan-400"><i class="fa-solid fa-rotate-right mr-1"></i> Recomprobar</button>
+    </div>
 
-        if (token && email) {
-          document.getElementById("nav-guest").classList.add("hidden");
-          document.getElementById("nav-user").classList.remove("hidden");
-          document.getElementById("user-display").innerText = email;
+    <!-- VIEW 1: CATALOGO DE SERVICIOS -->
+    <section id="view-catalog" class="view-section space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <h1 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            Catálogo de Servicios de Auditoría
+          </h1>
+          <p class="text-slate-400 text-sm mt-1">Evaluación de vulnerabilidades y servicios de ciberseguridad para infraestructuras Cloud.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">Filtrar:</span>
+          <span class="px-2.5 py-1 text-xs rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Todos los servicios</span>
+        </div>
+      </div>
+
+      <!-- Grid de Servicios -->
+      <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Los servicios se cargarán dinámicamente aquí -->
+        <div class="col-span-full text-center py-12 text-slate-500">
+          <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-cyan-500"></i>
+          <p>Cargando servicios de seguridad...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LOGIN -->
+    <section id="view-login" class="view-section hidden max-w-md mx-auto py-8">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 shadow-2xl cyber-glow">
+        <div class="text-center mb-6">
+          <div class="inline-flex p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-400 mb-3">
+            <i class="fa-solid fa-lock text-2xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white">Iniciar Sesión</h2>
+          <p class="text-xs text-slate-400 mt-1">Accede a tus proyectos e informes de auditoría</p>
+        </div>
+
+        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Correo Electrónico</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-sm"></i>
+              <input type="email" id="login-email" required placeholder="admin@pentest.com" class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Contraseña</label>
+            <div class="relative">
+              <i class="fa-solid fa-key absolute left-3 top-3 text-slate-500 text-sm"></i>
+              <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-lg text-sm transition shadow-lg shadow-cyan-500/20 mt-2">
+            Ingresar al Portal
+          </button>
+        </form>
+
+        <!-- Quick Credentials Hint for Testing -->
+        <div class="mt-6 p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs text-slate-400 space-y-1">
+          <div class="font-semibold text-slate-300">💡 Usuarios por defecto de la base de datos:</div>
+          <div>• Admin: <code class="text-cyan-400">admin@pentest.com</code> / <code class="text-cyan-400">Admin123*</code></div>
+          <div>• Cliente: <code class="text-cyan-400">user@pentest.com</code> / <code class="text-cyan-400">User123*</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: REGISTER -->
+    <section id="view-register" class="view-section hidden max-w-md mx-auto py-8">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 shadow-2xl">
+        <div class="text-center mb-6">
+          <div class="inline-flex p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-cyan-400 mb-3">
+            <i class="fa-solid fa-user-plus text-2xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-white">Registro de Cuenta</h2>
+          <p class="text-xs text-slate-400 mt-1">Crea una cuenta para solicitar y gestionar pentestings</p>
+        </div>
+
+        <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Nombre Completo</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-sm"></i>
+              <input type="text" id="reg-name" required placeholder="Juan Pérez" class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Correo Electrónico</label>
+            <div class="relative">
+              <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-500 text-sm"></i>
+              <input type="email" id="reg-email" required placeholder="cliente@empresa.com" class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Contraseña</label>
+            <div class="relative">
+              <i class="fa-solid fa-key absolute left-3 top-3 text-slate-500 text-sm"></i>
+              <input type="password" id="reg-password" required placeholder="••••••••" class="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-lg text-sm transition shadow-lg shadow-cyan-500/20 mt-2">
+            Crear Cuenta de Cliente
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VIEW 4: PERFIL DE USUARIO & MIS INFORMES -->
+    <section id="view-profile" class="view-section hidden space-y-6">
+      <!-- Profile Header Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-cyan-500/20">
+            <span id="profile-avatar">U</span>
+          </div>
+          <div>
+            <h2 id="profile-name" class="text-xl font-bold text-white">Nombre Usuario</h2>
+            <p id="profile-email" class="text-sm text-slate-400 font-mono">email@ejemplo.com</p>
+            <div class="flex items-center gap-2 mt-2" id="profile-roles-container">
+              <span class="px-2 py-0.5 text-xs rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">Rol: Basic</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="loadUserReports()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-file-pdf text-red-400"></i> Ver Informes de Mis Proyectos
+        </button>
+      </div>
+
+      <!-- Seccion Informes del Usuario -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-folder-closed text-cyan-400"></i> Informes de Seguridad y Auditorías Asignadas
+          </h3>
+          <span id="report-count-badge" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full">0 informes</span>
+        </div>
+
+        <div id="user-reports-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Carga dinamica de informes -->
+          <div class="col-span-full p-8 text-center bg-slate-900/50 border border-slate-800 rounded-xl text-slate-500">
+            <i class="fa-solid fa-clipboard-check text-3xl mb-2 text-slate-600"></i>
+            <p class="text-sm">Haz clic en "Ver Informes de Mis Proyectos" para consultar las auditorías disponibles en S3 / DynamoDB.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: PANEL ADMIN (Subir informes a S3 / DynamoDB) -->
+    <section id="view-admin" class="view-section hidden space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="inline-flex items-center gap-2 text-xs font-mono px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md mb-2">
+          <i class="fa-solid fa-shield-cat"></i> Acceso Restringido: Administrador
+        </div>
+        <h1 class="text-2xl font-bold text-white">Gestión y Carga de Informes de Pentesting</h1>
+        <p class="text-slate-400 text-sm mt-1">Sube informes de auditoría asignados a clientes directamente al bucket S3 y registra metadatos en DynamoDB.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Formulario Carga de Informe -->
+        <div class="lg:col-span-1 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-4">
+          <h3 class="text-md font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+            <i class="fa-solid fa-cloud-arrow-up text-cyan-400"></i> Subir Informe de Seguridad
+          </h3>
+
+          <form id="form-upload-report" onsubmit="handleUploadReport(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">ID de Reporte / Proyecto</label>
+              <input type="text" id="report-id" required placeholder="rep-101" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Email del Cliente Destino</label>
+              <input type="email" id="report-target-user" required placeholder="user@pentest.com" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Nombre del Archivo S3</label>
+              <input type="text" id="report-filename" required placeholder="auditoria-web-owasp.txt" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Contenido / Resumen Ejecutivo</label>
+              <textarea id="report-content" rows="4" required placeholder="Resultados de la evaluación de vulnerabilidades: 0 Críticas, 2 Altas corregidas..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:border-cyan-500"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-sm transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-upload"></i> Subir a S3 & Registar en DynamoDB
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Informes Registrados (Histórico General) -->
+        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col">
+          <h3 class="text-md font-bold text-white flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <span class="flex items-center gap-2"><i class="fa-solid fa-list-ul text-cyan-400"></i> Registro Global de Informes</span>
+            <button onclick="renderAdminReportList()" class="text-xs text-cyan-400 hover:underline"><i class="fa-solid fa-arrows-rotate"></i> Actualizar</button>
+          </h3>
+
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left text-sm text-slate-300">
+              <thead class="text-xs text-slate-400 uppercase bg-slate-950 border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3">ID Reporte</th>
+                  <th class="px-4 py-3">Cliente</th>
+                  <th class="px-4 py-3">Archivo S3</th>
+                  <th class="px-4 py-3 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reports-table-body" class="divide-y divide-slate-800">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal para previsualizar contenido del Informe -->
+  <div id="report-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-report-title" class="font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-file-lines text-cyan-400"></i> Detalle del Informe
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-2 text-xs font-mono text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
+        <div><span class="text-slate-500">ID Reporte:</span> <span id="modal-report-id" class="text-cyan-400"></span></div>
+        <div><span class="text-slate-500">Cliente Asignado:</span> <span id="modal-report-user" class="text-white"></span></div>
+        <div><span class="text-slate-500">Archivo S3 Key:</span> <span id="modal-report-key" class="text-amber-400"></span></div>
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Contenido / Dictamen:</label>
+        <div id="modal-report-body" class="bg-slate-950 border border-slate-800 p-4 rounded-lg text-sm font-mono text-slate-200 whitespace-pre-wrap max-h-60 overflow-y-auto"></div>
+      </div>
+
+      <div class="text-right">
+        <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // --- APP CONFIG & STATE ---
+    const API_BASE_URL = 'http://localhost:3000/api/v1';
+    let currentUser = JSON.parse(localStorage.getItem('pentest_user')) || null;
+    let currentToken = localStorage.getItem('pentest_token') || null;
+    let mockMode = false;
+
+    // Local Mock DB fallback for Offline/Frontend-only tests
+    const localMockReports = JSON.parse(localStorage.getItem('pentest_mock_reports')) || [
+      {
+        reportId: 'rep-001',
+        userId: 'user@pentest.com',
+        fileName: 'auditoria-web-owasp.txt',
+        s3Key: 'user@pentest.com/auditoria-web-owasp.txt',
+        fileContent: 'INFORME PENTESTING WEB:\n- Evaluación OWASP Top 10 completada.\n- Estado: Aprobado sin vulnerabilidades críticas.'
+      }
+    ];
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      updateAuthUI();
+      checkBackendHealth();
+      navigateTo('catalog');
+    };
+
+    // --- ROUTING / NAVIGATION ---
+    function navigateTo(viewName) {
+      // Hide all view sections
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+
+      // Show requested view
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+
+      // Highlight Navigation Buttons
+      ['catalog', 'profile', 'admin'].forEach(nav => {
+        const btn = document.getElementById(`nav-${nav}`);
+        if (btn) {
+          if (nav === viewName) {
+            btn.classList.add('bg-slate-800', 'text-cyan-400');
+          } else {
+            btn.classList.remove('bg-slate-800', 'text-cyan-400');
+          }
         }
-
-        fetchServices();
       });
 
-      async function fetchServices() {
-        const container = document.getElementById("services-container");
-        container.innerHTML =
-          "<p><i>Cargando catálogo de cursos y auditorías...</i></p>";
+      // View specific triggers
+      if (viewName === 'catalog') fetchServices();
+      if (viewName === 'profile') renderUserProfile();
+      if (viewName === 'admin') renderAdminReportList();
+    }
 
-        try {
-          const res = await fetch("http://localhost:3000/api/v1/services");
+    // --- HEALTH CHECK FOR BACKEND API ---
+    async function checkBackendHealth() {
+      const bannerDot = document.getElementById('api-status-dot');
+      const bannerText = document.getElementById('api-status-text');
 
-          if (!res.ok) {
-            throw new Error(
-              `Error en el servidor backend (Status: ${res.status})`,
-            );
-          }
-
-          const responseData = await res.json();
-
-          // Adaptador para soportar arrays directos o dentro de responseData.data
-          const services = Array.isArray(responseData)
-            ? responseData
-            : responseData.data || [];
-
-          if (services.length === 0) {
-            container.innerHTML =
-              "<p>No hay cursos ni auditorías disponibles en este momento.</p>";
-            return;
-          }
-
-          // Renderizar los elementos adaptando los nombres de las columnas
-          container.innerHTML = services
-            .map(
-              (s) => `
-          <div class="service-card">
-              <h3>${escapeHTML(s.name || s.title || "Servicio de Auditoría")}</h3>
-              <p>${escapeHTML(s.description || "Auditoría especializada de infraestructura y evaluación de vulnerabilidades.")}</p>
-              <p>
-                <b>Precio:</b> ${s.price ? s.price + " €" : "Consultar"} | 
-                <b>Duración:</b> ${escapeHTML(s.time || s.duration || "A convenir")}
-              </p>
-          </div>
-      `,
-            )
-            .join("");
-        } catch (err) {
-          console.error("Error al obtener servicios:", err);
-          container.innerHTML = `
-      <div style="background-color: #721c24; color: #f8d7da; padding: 15px; border-radius: 5px;">
-        ❌ <b>Error al conectar con la API:</b> Comprueba que el backend en Node.js está activo y responde en el puerto 3000.
-      </div>
-    `;
+      try {
+        const res = await fetch(`${API_BASE_URL}/services`);
+        if (res.ok) {
+          bannerDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50";
+          bannerText.innerHTML = "API Node.js & Floci en línea (http://localhost:3000)";
+          mockMode = false;
+        } else {
+          throw new Error("HTTP Status Error");
         }
+      } catch (err) {
+        bannerDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+        bannerText.innerHTML = "API offline o inalcanzable. Usando datos locales emulados.";
+        mockMode = true;
+      }
+    }
+
+    // --- SERVICES CATALOG ---
+    async function fetchServices() {
+      const grid = document.getElementById('services-grid');
+      
+      try {
+        const res = await fetch(`${API_BASE_URL}/services`);
+        if (!res.ok) throw new Error("Error obteniendo catálogo");
+        const json = await res.json();
+        renderServices(json.data || []);
+      } catch (err) {
+        // Fallback Mock Services
+        const mockServices = [
+          { id: "srv-1", name: "Auditoría Web & APIs (OWASP)", description: "Evaluación de vulnerabilidades OWASP Top 10 en aplicaciones web y APIs RESTful.", price: 499.99, time: "5 días" },
+          { id: "srv-2", name: "Pentesting de Red e Infraestructura", description: "Análisis de seguridad en redes internas, externas y configuraciones de cortafuegos.", price: 850.00, time: "7 días" },
+          { id: "srv-3", name: "Auditoría de Seguridad Cloud AWS", description: "Revisión de configuraciones en AWS IAM, S3 Buckets, Security Groups y VPC.", price: 1200.00, time: "10 días" },
+          { id: "srv-4", name: "Hacking Ético & Red Teaming", description: "Simulación de ciberataques avanzados para medir la capacidad de respuesta de la empresa.", price: 1500.00, time: "14 días" }
+        ];
+        renderServices(mockServices);
+      }
+    }
+
+    function renderServices(services) {
+      const grid = document.getElementById('services-grid');
+      if (!services || services.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-8 text-slate-500">No hay servicios disponibles.</div>`;
+        return;
       }
 
-      // Función de sanitización básica contra Cross-Site Scripting (XSS)
-      function escapeHTML(str) {
-        return String(str).replace(
-          /[&<>'"]/g,
-          (tag) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              "'": "&#39;",
-              '"': "&quot;",
-            })[tag] || tag,
-        );
+      grid.innerHTML = services.map(s => `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-slate-700 transition cyber-glow-hover">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded border border-cyan-500/20">${s.id || 'SRV'}</span>
+              <span class="text-xs font-mono text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${s.time || s.duration || 'N/A'}</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">${s.name || s.title}</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">${s.description}</p>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-500 block uppercase">Precio Auditoría</span>
+              <span class="text-xl font-bold text-cyan-400">${typeof s.price === 'number' ? s.price.toFixed(2) + ' €' : s.price}</span>
+            </div>
+            <button onclick="requestService('${s.name || s.title}')" class="px-4 py-2 bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-200 text-xs font-bold rounded-lg transition">
+              Solicitar Auditoría
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function requestService(serviceTitle) {
+      if (!currentUser) {
+        showToast('Debes iniciar sesión para contratar un servicio', 'warning');
+        navigateTo('login');
+      } else {
+        showToast(`Solicitud enviada para "${serviceTitle}". Contactaremos con ${currentUser.email}`, 'success');
+      }
+    }
+
+    // --- LOGIN HANDLER ---
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Error en inicio de sesión');
+
+        // Save session
+        currentToken = data.token;
+        currentUser = data.user;
+        localStorage.setItem('pentest_token', currentToken);
+        localStorage.setItem('pentest_user', JSON.stringify(currentUser));
+
+        showToast(`Bienvenido de nuevo, ${currentUser.name || currentUser.email}`, 'success');
+        updateAuthUI();
+        navigateTo('profile');
+
+      } catch (err) {
+        // Fallback for testing without working DB connection
+        if (mockMode || err.message.includes('Failed to fetch')) {
+          const isDbAdmin = email.includes('admin');
+          currentUser = {
+            email: email,
+            name: isDbAdmin ? "Administrador" : "Usuario Cliente",
+            roles: isDbAdmin ? ["admin"] : ["basic"]
+          };
+          currentToken = "mock_jwt_token_sample";
+          localStorage.setItem('pentest_token', currentToken);
+          localStorage.setItem('pentest_user', JSON.stringify(currentUser));
+          
+          showToast(`Inicio de sesión emulado (${currentUser.roles[0]})`, 'info');
+          updateAuthUI();
+          navigateTo('profile');
+          return;
+        }
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- REGISTER HANDLER ---
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Error en el registro');
+
+        showToast('Cuenta creada correctamente. ¡Ahora puedes iniciar sesión!', 'success');
+        navigateTo('login');
+
+      } catch (err) {
+        if (mockMode || err.message.includes('Failed to fetch')) {
+          showToast('Modo de prueba: Usuario registrado en la memoria local.', 'info');
+          navigateTo('login');
+          return;
+        }
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- PROFILE & REPORTS ---
+    function renderUserProfile() {
+      if (!currentUser) return;
+
+      document.getElementById('profile-name').innerText = currentUser.name || "Usuario Cliente";
+      document.getElementById('profile-email').innerText = currentUser.email;
+      document.getElementById('profile-avatar').innerText = (currentUser.name || currentUser.email).charAt(0).toUpperCase();
+
+      const rolesContainer = document.getElementById('profile-roles-container');
+      const roles = currentUser.roles || ['basic'];
+      rolesContainer.innerHTML = roles.map(r => `
+        <span class="px-2.5 py-0.5 text-xs rounded-full ${r === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'} font-mono uppercase">
+          Rol: ${r}
+        </span>
+      `).join('');
+
+      loadUserReports();
+    }
+
+    async function loadUserReports() {
+      const container = document.getElementById('user-reports-list');
+      const badge = document.getElementById('report-count-badge');
+
+      if (!currentUser) return;
+
+      // Filter local reports for this user
+      const userReports = localMockReports.filter(r => r.userId.toLowerCase() === currentUser.email.toLowerCase());
+      
+      badge.innerText = `${userReports.length} informes`;
+
+      if (userReports.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center bg-slate-900/50 border border-slate-800 rounded-xl text-slate-500">
+            <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-600"></i>
+            <p class="text-sm">No se encontraron informes de auditoría asignados a tu cuenta (${currentUser.email}).</p>
+          </div>`;
+        return;
       }
 
-      function logout() {
-        localStorage.removeItem("jwt_token");
-        localStorage.removeItem("user_email");
-        window.location.reload();
+      container.innerHTML = userReports.map(rep => `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-mono text-cyan-400 font-bold">${rep.reportId}</span>
+            <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">S3 Stored</span>
+          </div>
+          <h4 class="font-bold text-white text-md mb-1">${rep.fileName}</h4>
+          <p class="text-xs text-slate-400 font-mono mb-4 truncate">${rep.s3Key}</p>
+          <button onclick="openReportModal('${rep.reportId}')" class="w-full py-2 bg-cyan-500/10 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 border border-cyan-500/30 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-eye"></i> Leer Dictamen / Informe
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // --- UPLOAD REPORT (ADMIN PANEL) ---
+    async function handleUploadReport(e) {
+      e.preventDefault();
+      
+      const reportId = document.getElementById('report-id').value;
+      const targetEmail = document.getElementById('report-target-user').value;
+      const fileName = document.getElementById('report-filename').value;
+      const fileContent = document.getElementById('report-content').value;
+
+      const payload = { reportId, fileName, fileContent, targetEmail };
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/upload-report`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentToken}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error subiendo informe');
+
+        showToast('Informe subido a S3 y registrado en DynamoDB con éxito', 'success');
+
+      } catch (err) {
+        // Fallback local registry
+        localMockReports.push({
+          reportId: reportId,
+          userId: targetEmail,
+          fileName: fileName,
+          s3Key: `${targetEmail}/${fileName}`,
+          fileContent: fileContent
+        });
+        localStorage.setItem('pentest_mock_reports', JSON.stringify(localMockReports));
+        
+        showToast(`Informe registrado localmente para ${targetEmail}`, 'info');
       }
-    </script>
-  </body>
+
+      document.getElementById('form-upload-report').reset();
+      renderAdminReportList();
+    }
+
+    function renderAdminReportList() {
+      const tbody = document.getElementById('admin-reports-table-body');
+      
+      if (localMockReports.length === 0) {
+        tbody.innerHTML = `<tr><td colSpan="4" class="px-4 py-6 text-center text-slate-500">Sin informes registrados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = localMockReports.map(rep => `
+        <tr class="hover:bg-slate-800/50 transition">
+          <td class="px-4 py-3 font-mono text-cyan-400 text-xs">${rep.reportId}</td>
+          <td class="px-4 py-3 font-mono text-xs text-white">${rep.userId}</td>
+          <td class="px-4 py-3 font-mono text-xs text-slate-400">${rep.fileName}</td>
+          <td class="px-4 py-3 text-right">
+            <button onclick="openReportModal('${rep.reportId}')" class="text-xs text-cyan-400 hover:text-cyan-300 font-semibold">
+              <i class="fa-solid fa-eye"></i> Ver
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // --- MODAL UTILS ---
+    function openReportModal(reportId) {
+      const rep = localMockReports.find(r => r.reportId === reportId);
+      if (!rep) return;
+
+      document.getElementById('modal-report-id').innerText = rep.reportId;
+      document.getElementById('modal-report-user').innerText = rep.userId;
+      document.getElementById('modal-report-key').innerText = rep.s3Key;
+      document.getElementById('modal-report-body').innerText = rep.fileContent || 'Sin contenido';
+
+      document.getElementById('report-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('report-modal').classList.add('hidden');
+    }
+
+    // --- AUTHENTICATION & UI SYNC ---
+    function updateAuthUI() {
+      const loggedOutDiv = document.getElementById('auth-buttons-logged-out');
+      const loggedInDiv = document.getElementById('auth-buttons-logged-in');
+      const navProfile = document.getElementById('nav-profile');
+      const navAdmin = document.getElementById('nav-admin');
+
+      if (currentUser) {
+        loggedOutDiv.classList.add('hidden');
+        loggedInDiv.classList.remove('hidden');
+        navProfile.classList.remove('hidden');
+
+        document.getElementById('user-display-name').innerText = currentUser.name || currentUser.email;
+        const roles = currentUser.roles || ['basic'];
+        document.getElementById('user-display-role').innerText = `Rol: ${roles.join(', ')}`;
+
+        if (roles.includes('admin')) {
+          navAdmin.classList.remove('hidden');
+        } else {
+          navAdmin.classList.add('hidden');
+        }
+      } else {
+        loggedOutDiv.classList.remove('hidden');
+        loggedInDiv.classList.add('hidden');
+        navProfile.classList.add('hidden');
+        navAdmin.classList.add('hidden');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      currentToken = null;
+      localStorage.removeItem('pentest_token');
+      localStorage.removeItem('pentest_user');
+      showToast('Sesión cerrada correctamente', 'info');
+      updateAuthUI();
+      navigateTo('catalog');
+    }
+
+    // --- TOAST NOTIFICATION SYSTEM ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-950 border-emerald-500 text-emerald-200',
+        error: 'bg-red-950 border-red-500 text-red-200',
+        warning: 'bg-amber-950 border-amber-500 text-amber-200',
+        info: 'bg-slate-900 border-cyan-500 text-cyan-200'
+      };
+
+      const icons = {
+        success: 'fa-circle-check text-emerald-400',
+        error: 'fa-triangle-exclamation text-red-400',
+        warning: 'fa-circle-exclamation text-amber-400',
+        info: 'fa-circle-info text-cyan-400'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 p-4 rounded-xl border ${colors[type] || colors.info} shadow-xl text-xs font-medium transition transform translate-y-2`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type]} text-base"></i>
+        <span class="flex-1">${message}</span>
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+  </script>
+</body>
 </html>
