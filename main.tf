@@ -24,6 +24,7 @@ provider "aws" {
   endpoints {
     s3             = "http://127.0.0.1:4566"
     secretsmanager = "http://127.0.0.1:4566" 
+    dynamodb       = "http://127.0.0.1:4566"
   }
 }
 
@@ -46,6 +47,42 @@ resource "aws_secretsmanager_secret_version" "db_credentials_val" {
     password = "mi_password_segura"
     database = "tiendadb"
   })
+}
+
+# 3. Recurso: Tabla DynamoDB para Usuarios
+resource "aws_dynamodb_table" "users" {
+  name         = "Users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "email"
+
+  attribute {
+    name = "email"
+    type = "S"
+  }
+}
+
+# 4. Recurso: Tabla DynamoDB para el Catálogo de Servicios
+resource "aws_dynamodb_table" "services" {
+  name         = "Services"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
+# 5. Recurso: Tabla DynamoDB para Informes de Seguridad
+resource "aws_dynamodb_table" "informes" {
+  name         = "InformesSeguridad"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "reportId"
+
+  attribute {
+    name = "reportId"
+    type = "S"
+  }
 }
 
 # Outputs para verificar los resultados tras el despliegue
