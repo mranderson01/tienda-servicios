@@ -1,9 +1,20 @@
 services:
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - pentest-network
+
   backend:
     build: ${BUILD}
     ports:
       - ${PORTS_BACKEND}
-    env_file: # 👈 Carga automáticamente TODAS las variables de tu archivo .env
+    env_file:
       - ${NAME_ENVIROMENT}
     environment:
       - PORT=${PORT}
